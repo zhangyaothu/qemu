@@ -242,6 +242,10 @@ config STELLARIS
 config STM32VLDISCOVERY
     bool
     select STM32F100_SOC
+    
+config STM32H745ZL_NUCLEO
+    bool
+    select STM32H7X5_SOC
 
 config STRONGARM
     bool
@@ -355,6 +359,12 @@ config STM32F405_SOC
     select OR_IRQ
     select STM32F4XX_SYSCFG
     select STM32F4XX_EXTI
+    
+config STM32H7X5_SOC
+    bool
+    select ARM_V7M
+    select STM32H7X5_SYSCFG
+    select STM32H7X5_TIMER
 
 config XLNX_ZYNQMP_ARM
     bool

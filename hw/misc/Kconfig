@@ -85,6 +85,9 @@ config STM32F4XX_SYSCFG
 
 config STM32F4XX_EXTI
     bool
+    
+config STM32H7X5_SYSCFG
+    bool
 
 config MIPS_ITU
     bool

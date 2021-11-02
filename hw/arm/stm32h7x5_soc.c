@@ -12,6 +12,7 @@
 #include "hw/arm/stm32h7x5_soc.h"
 #include "hw/qdev-properties.h"
 #include "hw/qdev-core.h"
+#include "hw/misc/unimp.h"
 #include "hw/sysbus.h"
 
 /* general purpose timers: TIM2/TIM3/TIM4/TIM5 */
@@ -37,7 +38,7 @@ static void stm32h7x5_soc_initfn(Object *obj) {
 
 /* formatter:off */
 static Property stm32h7x5_soc_properties[] = {
-  DEFINE_PROP_STRING("cpu_type", STM32H7X5State, cpu_type),
+  DEFINE_PROP_STRING("cpu-type", STM32H7X5State, cpu_type),
   DEFINE_PROP_END_OF_LIST(),
 };
 /* formatter:on */
@@ -48,19 +49,20 @@ static void stm32h7x5_soc_realize(DeviceState *dev_soc, Error **errp) {
   SysBusDevice *busdev;
   int i;
 
+  /* static declared system memory, new memory should be associated with it */
   MemoryRegion *system_memory = get_system_memory();
   MemoryRegion *sram = g_new(MemoryRegion, 1);
   MemoryRegion *flash = g_new(MemoryRegion, 1);
   MemoryRegion *flash_alias = g_new(MemoryRegion, 1);
 
-  memory_region_init_rom(flash, OBJECT(dev_soc), "STM32H7X5.flash", FLASH_SIZE, &error_fatal);
-  memory_region_init_alias(flash_alias, OBJECT(dev_soc), "STM32H7X5.flash.alias", flash, 0, FLASH_SIZE);
+  memory_region_init_rom(flash, OBJECT(dev_soc), "STM32H7X5.flash", FLASH_BANK_SIZE, &error_fatal);
+  memory_region_init_alias(flash_alias, OBJECT(dev_soc), "STM32H7X5.flash.alias", flash, 0, FLASH_BANK_SIZE);
 
-  memory_region_add_subregion(system_memory, FLASH_BASE_ADDRESS, flash);
+  memory_region_add_subregion(system_memory, FLASH_BANK1, flash);
   memory_region_add_subregion(system_memory, 0, flash_alias);
 
-  memory_region_init_ram(sram, NULL, "STM32H7X5.sram", SRAM_SIZE, &error_fatal);
-  memory_region_add_subregion(system_memory, SRAM_BASE_ADDRESS, sram);
+  memory_region_init_ram(sram, NULL, "STM32H7X5.sram", SRAM_AXI_SIZE, &error_fatal);
+  memory_region_add_subregion(system_memory, SRAM_AXI, sram);
 
   armv7m = DEVICE(&s->armv7m);
   qdev_prop_set_uint32(armv7m, "num-irq", 96);
@@ -91,6 +93,12 @@ static void stm32h7x5_soc_realize(DeviceState *dev_soc, Error **errp) {
     sysbus_mmio_map(busdev, 0, timer_addr[i]);
     sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(armv7m, timer_irq[i]));
   }
+
+//  create_unimplemented_device("RCC",       0x58024400, 0x400);
+//  create_unimplemented_device("FLASH_REG",       0x52002000, 0x1000);
+//  create_unimplemented_device("EXTI",      0x58000000, 0x400);
+//  create_unimplemented_device("DBGMCU",      0x5C001000, 0x400);
+  create_unimplemented_device("PERIPHERALS", 0x40000000, 0x1FFFFFFF);
 }
 
 static void stm32h7x5_soc_class_init(ObjectClass *klass, void *data) {
